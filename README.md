@@ -24,3 +24,9 @@ git clone https://github.com/jerrygacket/simple_catalog.git
 cd simple_catalog
 make all
 ```
+## Open
+- Frontend: http://localhost:8088/
+- Admin: http://localhost:8086/
+- Product Search microservice: http://localhost:8087
+- percona-reindexer Sync microservice: http://localhost:8085
+- Reindexer: http://localhost:9088/face

@@ -64,9 +64,9 @@ services:
     reindexer_fs:
         image: reindexer/reindexer
         container_name: reindexer_fs
-#        ports:
-#            - "6534:6534"
-#            - "9088:9088"
+        ports:
+            - "6534:6534"
+            - "9088:9088"
         volumes:
             - ./reindexer_data:/var/lib/reindexer
         command: [ "reindexer_server", "--db", "/var/lib/reindexer", "--httpaddr", "0.0.0.0:9088", "--rpcaddr", "0.0.0.0:6534" ]
