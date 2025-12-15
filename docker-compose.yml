@@ -1,0 +1,106 @@
+version: "3.7"
+services:
+################################################################################
+#### 1  NGINX       ############################################################
+################################################################################
+
+    nginx_fs:
+        image: nginx:latest
+        container_name: nginx_fs
+        ports:
+            - "8088:80"
+            - "8086:8086"
+            - "8084:8084"
+            - "4433:443"
+        volumes:
+            - ./conf/nginx/:/etc/nginx/conf.d:cached
+            - ./conf/nginx/auth.htpasswd:/etc/nginx/auth.htpasswd:cached
+            - ./logs/nginx/:/var/log/nginx:cached
+            - ./logs/:/var/www/logs:cached
+            - ./app/:/var/www
+        links:
+            - php81_fs
+
+################################################################################
+#### 2  PHP-FPM     ############################################################
+################################################################################
+
+    php81_fs:
+        container_name: php81_fs
+        links:
+            - percona80_fs
+#            - redis_fs
+        build: ./images/php
+        ports:
+            - "52081:9000"
+        volumes:
+            - ./app:/var/www
+
+################################################################################
+#### 4  PERCONA     ############################################################
+################################################################################
+    percona80_fs:
+        container_name: percona80_fs
+        image: percona:ps-8.0.26-16
+        ports:
+            - "54080:3306"
+        volumes:
+            - ./conf/percona/percona-8.0:/etc/mysql/conf.d:cached
+            - ./database:/var/lib/mysql:cached
+            - ./dumps:/var/dumps
+        environment:
+            MYSQL_USER: 'user'
+            MYSQL_PASSWORD: 'pass'
+            MYSQL_ROOT_PASSWORD: 'root'
+            MYSQL_DATABASE: simple_fs
+            MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+        healthcheck:
+            test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s  # Gives the DB time to initialize
+        command: ['mysqld', '--log-bin-trust-function-creators=1', '--sql-mode=', '--lower_case_table_names=1', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_general_ci', '--default-authentication-plugin=mysql_native_password']
+    reindexer_fs:
+        image: reindexer/reindexer
+        container_name: reindexer_fs
+#        ports:
+#            - "6534:6534"
+#            - "9088:9088"
+        volumes:
+            - ./reindexer_data:/var/lib/reindexer
+        command: [ "reindexer_server", "--db", "/var/lib/reindexer", "--httpaddr", "0.0.0.0:9088", "--rpcaddr", "0.0.0.0:6534" ]
+    product-service_fs:
+        build:
+            context: ./app/api/product-service
+            dockerfile: ../../../images/product-service/Dockerfile
+        container_name: product-service_fs
+        ports:
+            - "8087:8087"
+        environment:
+            REINDEXER_DSN: "cproto://reindexer_fs:6534/ecommerce"
+            REINDEXER_DB: "products"
+            SYNC_INTERVAL: "30s"
+            MYSQL_DSN: "root:root@tcp(percona80_fs:3306)/simple_fs?parseTime=true"
+        links:
+            - reindexer_fs
+
+
+    sync-service_fs:
+        build:
+            context: ./app/api/sync-service
+            dockerfile: ../../../images/sync-service/Dockerfile
+        container_name: sync-service_fs
+        ports:
+            - "8085:8085"
+        depends_on:
+            percona80_fs:
+                condition: service_healthy # App starts only after DB is healthy
+        environment:
+            MYSQL_DSN: "root:root@tcp(percona80_fs:3306)/simple_fs?parseTime=true"
+            REINDEXER_DSN: "cproto://reindexer_fs:6534/ecommerce"
+            REINDEXER_DB: "products"
+            SYNC_INTERVAL: "30s"
+        links:
+            - reindexer_fs
+            - percona80_fs

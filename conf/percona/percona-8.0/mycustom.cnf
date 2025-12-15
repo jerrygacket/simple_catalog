@@ -1,0 +1,40 @@
+# [mysqld]
+# max_allowed_packet=128M
+
+[client]
+port                        = 3306
+socket                      = /var/run/mysqld/mysqld.sock
+default-character-set       = utf8
+[mysqld_safe]
+socket                      = /var/run/mysqld/mysqld.sock
+nice                        = 0
+[mysqld]
+sql-mode=""
+collation-server            = utf8_general_ci
+init-connect                = 'SET NAMES utf8'
+character-set-server        = utf8
+skip-external-locking
+max_allowed_packet          = 16M
+key_buffer_size             = 16M
+innodb_buffer_pool_size     = 4096M
+innodb_file_per_table       = 1
+innodb_flush_method         = O_DIRECT
+innodb_flush_log_at_trx_commit  = 0
+transaction-isolation           = READ-COMMITTED
+max_connections             = 144
+innodb_log_file_size        = 512M
+log_error                   = /var/log/mysql/error.log
+slow_query_log              = /var/log/mysql/slow.log
+long_query_time             = 1
+general_log_file            = /var/log/mysql/general.log
+general_log                 = 0
+expire_logs_days            = 2
+max_binlog_size             = 100M
+[mysql]
+default-character-set       = utf8
+[mysqldump]
+quick
+quote-names
+max_allowed_packet          = 16M
+!includedir /etc/mysql/conf.d/
+!includedir /etc/mysql/mysql.conf.d/

@@ -1,0 +1,1 @@
+let baseUri = window.location.origin;
