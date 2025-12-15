@@ -332,6 +332,14 @@ func loadToReindexer() error {
 	totalLoaded := 0
 	dbName := getEnv("REINDEXER_DB", "products_db")
 
+	if err := rx.DropNamespace(dbName); err != nil {
+		log.Printf("Error deleting namespace: %s: %v", dbName, err)
+	}
+
+	if err := rx.OpenNamespace(dbName, reindexer.DefaultNamespaceOptions(), ReindexerProduct{}); err != nil {
+		log.Printf("Creating new namespace: %s", dbName)
+	}
+
 	log.Printf("Starting data load to Reindexer...")
 
 	for {

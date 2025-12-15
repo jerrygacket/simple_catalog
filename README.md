@@ -14,11 +14,13 @@ Contains
 ## Technologies
 - Docker
 - Nginx
+- Percona (SQL)
 - PHP-FPM
-- Reindexer
+- Reindexer (NoSQL)
 - microservices
 ## Build & Deploy
 ```shell
-make install
-make
+git clone https://github.com/jerrygacket/simple_catalog.git
+cd simple_catalog
+make all
 ```

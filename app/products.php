@@ -94,7 +94,7 @@ $end = $start + 100;
 // Products data
 for ($k = $start; $k < $end; $k++) {
     $products_data = [];
-    for ($i = 0; $i < 1000; $i++) {
+    for ($i = 0; $i < 10; $i++) {
         $material = $materials[rand(0, count($materials) - 1)]['value'];
         $color = $colors[rand(0, count($colors) - 1)]['value'];
         $skus = [];

@@ -1,10 +1,13 @@
 install:
-	mkdir -p {dumps,database}
+	mkdir -p dumps
+	mkdir -p database
 	mkdir -p app/logs
-	#mkdir -p logs/nginx
-	#chmod -R 777 database
-	#chmod -R 777 logs
-	#chmod -R 777 app/logs
+	mkdir -p logs/nginx
+	chmod -R 777 database
+	chmod -R 777 dumps
+	chmod -R 777 reindexer_data
+	chmod -R 777 logs
+	chmod -R 777 app/logs
 
 build:
 	docker compose build
